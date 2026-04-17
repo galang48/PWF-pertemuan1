@@ -3,11 +3,9 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
- */
 class ProductFactory extends Factory
 {
     /**
@@ -18,11 +16,10 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            //
-            'user_id' => User::all()->random()->id,
-            'name' => $this->faker->words(2, true),
-            'quantity' => $this->faker->numberBetween(1, 100),
-            'price' => $this->faker->numberBetween(10000, 100000),
+            'name' => fake()->words(2, true),
+            'quantity' => fake()->numberBetween(1, 100),
+            'price' => fake()->randomFloat(2, 1000, 100000),
+            'user_id' => \App\Models\User::factory(),
         ];
     }
 }
