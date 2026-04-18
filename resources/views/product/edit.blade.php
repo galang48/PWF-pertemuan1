@@ -119,7 +119,6 @@
 
                     </div>
 
-                    @if(auth()->user()->role === 'admin')
                     <!-- Owner -->
                     <div>
                         <label for="user_id"
@@ -135,7 +134,7 @@
                                 text-gray-900 dark:text-gray-100
                                 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <option value="">Select Owner</option>
+                            <option value="">-- Select Owner --</option>
 
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}"
@@ -150,7 +149,6 @@
                             <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
-                    @endif
 
                     <!-- Actions -->
                     <div class="flex items-center justify-between pt-2">

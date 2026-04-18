@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $products = Product::all();
@@ -19,25 +25,38 @@ class ProductController extends Controller
     {
         // Dummy export logic
         return response('File export is ready for user ' . auth()->user()->name, 200)
-                  ->header('Content-Type', 'text/plain');
+            ->header('Content-Type', 'text/plain');
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        if (auth()->check() && auth()->user()->role !== 'admin') {
-            $request->merge(['user_id' => auth()->id()]);
+        $validated = $request->validated();
+
+        try {
+            Product::create($validated);
+
+            return redirect()
+                ->route('product.index')
+                ->with('success', 'Product created successfully.');
+        } catch (QueryException $e) {
+            Log::error('Product store database error', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Database error while creating product.');
+        } catch (\Throwable $e) {
+            Log::error('Product store unexpected error', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Unexpected error occurred.');
         }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'quantity' => 'required|integer',
-            'price' => 'required|numeric',
-            'user_id' => 'required|exists:users,id',
-        ]);
-
-        $product = Product::create($validated);
-
-        return redirect()->route('product.index')->with('success', 'Product created successfully.');
     }
 
     public function create()
@@ -54,30 +73,24 @@ class ProductController extends Controller
         return view('product.view', compact('product'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateProductRequest $request, $id)
     {
         $product = Product::findOrFail($id);
-        abort_if(auth()->user()->cannot('update', $product), 403);
 
-        if (auth()->check() && auth()->user()->role !== 'admin') {
-            $request->merge(['user_id' => auth()->id()]);
-        }
+        $this->authorize('update', $product);
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'quantity' => 'sometimes|integer',
-            'price' => 'sometimes|numeric',
-            'user_id' => 'sometimes|exists:users,id',
-        ]);
+        $validated = $request->validated();
 
         $product->update($validated);
 
-        return redirect()->route('product.index')->with('success', 'Product updated successfully.');
+        return redirect()
+            ->route('product.index')
+            ->with('success', 'Product updated successfully.');
     }
 
     public function edit(Product $product)
     {
-        abort_if(auth()->user()->cannot('update', $product), 403);
+        $this->authorize('update', $product);
 
         $users = User::orderBy('name')->get();
 
@@ -87,7 +100,8 @@ class ProductController extends Controller
     public function delete($id)
     {
         $product = Product::findOrFail($id);
-        abort_if(auth()->user()->cannot('delete', $product), 403);
+
+        $this->authorize('delete', $product);
 
         $product->delete();
 

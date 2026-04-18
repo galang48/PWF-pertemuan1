@@ -100,7 +100,6 @@
 
                     </div>
 
-                    @if(auth()->user()->role === 'admin')
                     <!-- Owner -->
                     <div>
                         <label for="user_id"
@@ -116,11 +115,11 @@
                                 text-gray-900 dark:text-gray-100
                                 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-                            <option value="">Select Owner</option>
+                            <option value="">-- Select Owner --</option>
 
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}"
-                                    {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                    {{ old('user_id', auth()->id()) == $user->id ? 'selected' : '' }}>
                                     {{ $user->name }}
                                 </option>
                             @endforeach
@@ -131,7 +130,6 @@
                             <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
-                    @endif
 
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-2">
