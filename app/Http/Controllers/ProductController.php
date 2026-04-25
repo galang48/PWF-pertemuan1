@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Category;
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +16,7 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with(['category', 'user'])->latest()->get();
 
         return view('product.index', compact('products'));
     }
@@ -24,13 +24,14 @@ class ProductController extends Controller
     public function export()
     {
         // Dummy export logic
-        return response('File export is ready for user ' . auth()->user()->name, 200)
+        return response('File export is ready for user '.auth()->user()->name, 200)
             ->header('Content-Type', 'text/plain');
     }
 
     public function store(StoreProductRequest $request)
     {
         $validated = $request->validated();
+        $validated['user_id'] = $request->user()->id;
 
         try {
             Product::create($validated);
@@ -61,14 +62,14 @@ class ProductController extends Controller
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('product.create', compact('users'));
+        return view('product.create', compact('categories'));
     }
 
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with(['category', 'user'])->findOrFail($id);
 
         return view('product.view', compact('product'));
     }
@@ -92,9 +93,9 @@ class ProductController extends Controller
     {
         $this->authorize('update', $product);
 
-        $users = User::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
-        return view('product.edit', compact('product', 'users'));
+        return view('product.edit', compact('product', 'categories'));
     }
 
     public function delete($id)

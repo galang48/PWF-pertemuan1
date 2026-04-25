@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,10 +23,10 @@ it('validates product creation input', function () {
 
     $response
         ->assertRedirect(route('product.create'))
-        ->assertSessionHasErrors(['name', 'quantity', 'price']);
+        ->assertSessionHasErrors(['name', 'quantity', 'price', 'category_id']);
 });
 
-it('requires owner when creating a product', function () {
+it('requires category when creating a product', function () {
     $user = User::factory()->create([
         'role' => 'user',
     ]);
@@ -41,7 +42,7 @@ it('requires owner when creating a product', function () {
 
     $response
         ->assertRedirect(route('product.create'))
-        ->assertSessionHasErrors(['user_id']);
+        ->assertSessionHasErrors(['category_id']);
 });
 
 it('validates product update input', function () {
@@ -61,61 +62,48 @@ it('validates product update input', function () {
 
     $response
         ->assertRedirect(route('product.edit', $product))
-        ->assertSessionHasErrors(['name', 'quantity', 'price']);
+        ->assertSessionHasErrors(['name', 'quantity', 'price', 'category_id']);
 });
 
-it('allows changing owner while updating a product', function () {
+it('assigns the authenticated user when creating a product', function () {
     $user = User::factory()->create([
         'role' => 'user',
     ]);
-    $otherUser = User::factory()->create();
-    $product = Product::factory()->for($user)->create();
+    $category = Category::factory()->create();
 
     $response = $this
         ->actingAs($user)
-        ->put(route('product.update', $product), [
-            'name' => 'Monitor',
-            'quantity' => 5,
-            'price' => 1500000,
-            'user_id' => $otherUser->id,
+        ->post(route('product.store'), [
+            'name' => 'Keyboard',
+            'quantity' => 10,
+            'price' => 250000,
+            'category_id' => $category->id,
         ]);
 
     $response
         ->assertRedirect(route('product.index'));
 
-    expect($product->fresh()->user_id)->toBe($otherUser->id);
+    expect(Product::where('name', 'Keyboard')->first()?->user_id)->toBe($user->id);
 });
 
-it('allows admin to choose owner on create and update', function () {
-    $admin = User::factory()->create([
-        'role' => 'admin',
-    ]);
-    $owner = User::factory()->create([
+it('updates category without changing product owner', function () {
+    $user = User::factory()->create([
         'role' => 'user',
     ]);
-    $product = Product::factory()->for($admin)->create();
+    $oldCategory = Category::factory()->create();
+    $newCategory = Category::factory()->create();
+    $product = Product::factory()->for($user)->for($oldCategory)->create();
 
     $this
-        ->actingAs($admin)
-        ->post(route('product.store'), [
-            'name' => 'Mouse',
-            'quantity' => 3,
-            'price' => 175000,
-            'user_id' => $owner->id,
-        ])
-        ->assertRedirect(route('product.index'));
-
-    expect(Product::where('name', 'Mouse')->first()?->user_id)->toBe($owner->id);
-
-    $this
-        ->actingAs($admin)
+        ->actingAs($user)
         ->put(route('product.update', $product), [
             'name' => 'Mouse Pro',
             'quantity' => 7,
             'price' => 275000,
-            'user_id' => $owner->id,
+            'category_id' => $newCategory->id,
         ])
         ->assertRedirect(route('product.index'));
 
-    expect($product->fresh()->user_id)->toBe($owner->id);
+    expect($product->fresh()->user_id)->toBe($user->id)
+        ->and($product->fresh()->category_id)->toBe($newCategory->id);
 });

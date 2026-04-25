@@ -44,6 +44,9 @@
                                         Name</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Category</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Quantity</th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -66,6 +69,10 @@
 
                                         <td class="px-6 py-4 font-medium text-gray-800 dark:text-gray-100">
                                             {{ $product->name }}
+                                        </td>
+
+                                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400">
+                                            {{ $product->category->name ?? '-' }}
                                         </td>
 
                                         <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
@@ -113,7 +120,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                        <td colspan="7" class="px-6 py-12 text-center text-gray-400">
                                             No products found.
                                         </td>
                                     </tr>

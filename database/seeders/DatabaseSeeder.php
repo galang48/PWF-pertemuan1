@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -24,12 +24,30 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Buat 20 produk untuk user tersebut
-        Product::factory(20)->create([
-            'user_id' => $user->id,
+        User::factory()->create([
+            'name' => 'Bob',
+            'email' => 'bob@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'user',
         ]);
 
-        // Buat 10 kategori secara acak dari produk yang ada
-        Category::factory(10)->create();
+        $categories = collect([
+            'Perangkat Keras',
+            'Elektronik',
+            'Fashion',
+            'Makanan & Minuman',
+            'Kesehatan',
+            'Otomotif',
+            'Olahraga',
+        ])->map(fn (string $name) => Category::factory()->create([
+            'name' => $name,
+        ]));
+
+        Product::factory(20)
+            ->state(fn () => [
+                'user_id' => $user->id,
+                'category_id' => $categories->random()->id,
+            ])
+            ->create();
     }
 }

@@ -290,6 +290,11 @@
                         </div>
 
                         <div class="pd-row">
+                            <div class="pd-label">Category</div>
+                            <div class="pd-value">{{ $product->category->name ?? '-' }}</div>
+                        </div>
+
+                        <div class="pd-row">
                             <div class="pd-label">Quantity</div>
                             <div>
                                 <span class="pd-stock {{ $product->quantity > 0 ? 'in-stock' : 'low-stock' }}">

@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,8 +11,8 @@ Route::get('/', function () {
 });
 
 Route::get('/about', [AboutController::class, 'index'])
-->middleware('auth')
-->name('about');
+    ->middleware('auth')
+    ->name('about');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -29,6 +30,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
     Route::get('/product/edit/{product}', [ProductController::class, 'edit'])->name('product.edit');
     Route::delete('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
+
+    Route::get('/category', [CategoryController::class, 'index'])->name('category.index')->middleware('can:manage-category');
+    Route::post('/category', [CategoryController::class, 'store'])->name('category.store')->middleware('can:manage-category');
+    Route::get('/category/create', [CategoryController::class, 'create'])->name('category.create')->middleware('can:manage-category');
+    Route::put('/category/update/{id}', [CategoryController::class, 'update'])->name('category.update')->middleware('can:manage-category');
+    Route::get('/category/edit/{category}', [CategoryController::class, 'edit'])->name('category.edit')->middleware('can:manage-category');
+    Route::delete('/category/delete/{id}', [CategoryController::class, 'delete'])->name('category.delete')->middleware('can:manage-category');
 });
 
 require __DIR__.'/auth.php';

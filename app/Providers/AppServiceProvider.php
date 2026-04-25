@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -25,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('export-product', function (User $user) {
+            return $user->role === 'admin';
+        });
+
+        Gate::define('manage-category', function (User $user) {
             return $user->role === 'admin';
         });
     }

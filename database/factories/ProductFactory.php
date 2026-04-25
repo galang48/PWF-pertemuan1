@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class ProductFactory extends Factory
 {
@@ -19,7 +19,8 @@ class ProductFactory extends Factory
             'name' => fake()->words(2, true),
             'quantity' => fake()->numberBetween(1, 100),
             'price' => fake()->randomFloat(2, 1000, 100000),
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
         ];
     }
 }
