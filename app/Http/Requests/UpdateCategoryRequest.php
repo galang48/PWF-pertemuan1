@@ -9,6 +9,10 @@ class UpdateCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
+        if ($this->is('api/*')) {
+            return $this->user() !== null;
+        }
+
         return $this->user()?->can('manage-category') ?? false;
     }
 
